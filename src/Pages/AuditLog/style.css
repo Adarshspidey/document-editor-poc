@@ -1,0 +1,4 @@
+.audit-wrapper {
+  display: flex;
+  justify-content: space-between;
+}

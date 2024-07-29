@@ -1,0 +1,10 @@
+.docs {
+  padding: 10px;
+  margin: 10px 0;
+  height: 50px;
+  background-color: rgb(210, 210, 210);
+}
+
+.docs:hover {
+  background-color: rgb(145, 145, 145);
+}

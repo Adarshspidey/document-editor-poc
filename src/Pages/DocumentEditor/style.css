@@ -1,0 +1,101 @@
+.editor {
+  display: grid;
+  justify-content: center;
+  background-color: rgb(114, 114, 114);
+  padding: 50px 100px;
+  overflow: auto;
+  /* padding-left: 100px;
+  padding-right: 100px;
+  padding-top: 50px;
+  padding-bottom: 50px; */
+}
+.page {
+  width: 620px;
+  height: 877px;
+  border: 1px solid black;
+  padding: 20px;
+  background-color: white;
+  margin-bottom: 20px;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.page-content {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* position: relative; */
+}
+.selected {
+  background-color: bisque;
+}
+
+.comment {
+  background-color: #e9e9e9;
+  padding: 5px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+.modal-content textarea {
+  width: 100%;
+  height: 50px;
+  margin-bottom: 10px;
+  padding: 5px;
+}
+
+.modal-content button {
+  margin-right: 10px;
+}
+
+.comments {
+  margin-top: 20px;
+  padding: 20px;
+}
+
+.comment-popup {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.comment {
+  padding: 5px;
+  background-color: rgba(
+    255,
+    255,
+    0,
+    0.5
+  ); /* Light yellow background for comments */
+  border: 1px solid #000; /* Border to distinguish comments */
+}
+
+.doc-comm-wrapper {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+}
+
+.commented-text {
+  background-color: yellow; /* Highlight color for commented text */
+}
+
+.highlighted {
+  background-color: lightblue; /* Highlight color for the selected comment */
+}

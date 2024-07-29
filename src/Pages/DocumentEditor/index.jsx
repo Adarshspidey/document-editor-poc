@@ -1,5 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./style.css";
+
+const CommentModal = ({ isOpen, onClose, onSave }) => {
+  const [comment, setComment] = useState("");
+
+  const handleSave = () => {
+    onSave(comment);
+    setComment("");
+  };
+
+  return isOpen ? (
+    <div className="modal">
+      <div className="modal-content">
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Enter your comment"
+        />
+        <button onClick={handleSave}>Save Comment</button>
+        <button onClick={onClose}>Close</button>
+      </div>
+    </div>
+  ) : null;
+};
 
 const DocumentEditor = () => {
   const [fontSize, setFontSize] = useState("3");
@@ -10,11 +33,16 @@ const DocumentEditor = () => {
   const [isSubscript, setIsSubscript] = useState(false);
   const [isSuperscript, setIsSuperscript] = useState(false);
   const [isStrikethrough, setIsStrikethrough] = useState(false);
-  const [pages, setPages] = useState([React.createRef()]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedText, setSelectedText] = useState("");
+  const [documentContent, setDocumentContent] = useState("");
+  const editorRef = useRef(null);
+  const [comments, setComments] = useState([]);
+  const [highlightedComment, setHighlightedComment] = useState(null);
 
   const applyFormatting = (command, value = null) => {
     document.execCommand(command, false, value);
-    pages[pages.length - 1].current.focus();
+    editorRef.current.focus();
   };
 
   const toggleFormatting = (format) => {
@@ -72,40 +100,71 @@ const DocumentEditor = () => {
     applyFormatting("foreColor", color);
   };
 
-  const addNewPage = () => {
-    setPages((prevPages) => {
-      const newPages = [...prevPages, React.createRef()];
-      // Focus on the newly created page
-      setTimeout(() => {
-        const newPageRef = newPages[newPages.length - 1].current;
-        if (newPageRef) {
-          newPageRef.focus();
-        }
-      }, 0); // Adding a small delay to ensure the new page is rendered before focusing
-      return newPages;
-    });
-  };
-
-  const checkOverflow = () => {
-    const lastPage = pages[pages.length - 1].current;
-    const lineHeight = 24; // Assuming each line is 24px in height
-    const numberOfLines = Math.floor(lastPage.scrollHeight / lineHeight);
-    console.log(numberOfLines, "number");
-    if (numberOfLines > 25) {
-      addNewPage();
+  const handleMouseUp = () => {
+    const selection = window.getSelection();
+    const selectedText = selection.toString();
+    if (selectedText) {
+      setSelectedText(selectedText);
+      setIsModalOpen(true);
     }
   };
 
-  const handleInput = (index) => {
-    let debounceTimeout;
-    return () => {
-      clearTimeout(debounceTimeout);
-      debounceTimeout = setTimeout(() => {
-        checkOverflow();
-      }, 500); // Adjust the debounce time as needed
+  const handleSaveComment = (comment) => {
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+
+    // Create a span element to wrap the selected text
+    const span = document.createElement("span");
+    const commentId = `comment-${comments.length}`;
+    span.className = "commented-text";
+    span.setAttribute("id", commentId); // Add an attribute to identify the comment
+    range.surroundContents(span);
+
+    const newComment = {
+      id: commentId, // Add an id to the comment
+      text: selectedText,
+      comment,
+      startContainer: range.startContainer,
+      endContainer: range.endContainer,
+      startOffset: range.startOffset,
+      endOffset: range.endOffset,
     };
+    setComments([...comments, newComment]);
+    setIsModalOpen(false);
+    setSelectedText("");
   };
-  
+
+  const handleCommentClick = (comment) => {
+    // Remove highlight from previously highlighted comment, if any
+    if (highlightedComment) {
+      const previousSpan = document.getElementById(highlightedComment.id);
+      if (previousSpan) {
+        previousSpan.classList.remove("highlighted");
+      }
+    }
+
+    // Highlight the clicked comment
+    const span = document.getElementById(comment.id);
+    if (span) {
+      span.classList.add("highlighted");
+    }
+
+    setHighlightedComment(comment);
+  };
+
+  useEffect(() => {
+    if (highlightedComment) {
+      const span = document.getElementById(highlightedComment.id);
+      if (span) {
+        span.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [highlightedComment]);
+
+  const handleInput = () => {
+    const content = editorRef.current.innerHTML;
+    setDocumentContent(content);
+  };
 
   return (
     <div>
@@ -196,26 +255,49 @@ const DocumentEditor = () => {
             onChange={handleFontColorChange}
           />
         </label>
+        <button
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={handleMouseUp}
+        >
+          Add Comment
+        </button>
       </div>
-      <div className="editor">
-        {pages.map((page, index) => (
-          <div className="page" key={index}>
+      <div className="doc-comm-wrapper">
+        <div className="editor">
+          <div className="page">
             <div
               className="page-content"
+              onMouseUp={handleMouseUp}
+              onInput={handleInput}
               contentEditable
-              ref={page}
-              onInput={handleInput(index)}
+              ref={editorRef}
               style={{
-                width: "1240px",
-                height: "1754px",
-                border: "none",
+                width: "100%",
+                height: "100%",
+                border: "1px solid #ccc",
                 padding: "20px",
-                overflow: "hidden",
+                overflow: "auto",
                 backgroundColor: "white",
               }}
             ></div>
           </div>
-        ))}
+        </div>
+        <CommentModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveComment}
+        />
+        <div className="comments">
+          <h3>Comments</h3>
+          <ul>
+            {comments.map((c, index) => (
+              <li key={index} onClick={() => handleCommentClick(c)}>
+                <strong>Text:</strong> {c.text} <br />
+                <strong>Comment:</strong> {c.comment}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );

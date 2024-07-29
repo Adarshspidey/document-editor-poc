@@ -1,0 +1,15 @@
+.button-end {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.navbar-wrapper {
+  display: flex;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.navbar-wrapper-select {
+  background-color: bisque;
+}
